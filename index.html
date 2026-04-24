@@ -1,38 +1,157 @@
-<div id="products" class="grid grid-cols-2 gap-4 px-4">
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENKRO Pi DApp</title>
 
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50 pb-28">
+
+<!-- HEADER -->
+<header class="bg-indigo-700 text-white p-4 flex justify-between items-center">
+    <h1 class="font-bold text-xl">ENKRO Pi</h1>
+    <div id="userBox" class="text-xs"></div>
+</header>
+
+<!-- LOGIN -->
+<div class="p-4">
+    <button onclick="authPi()" class="bg-yellow-400 w-full p-2 rounded font-bold">
+        Login na Pi Network
+    </button>
 </div>
 
+<!-- PRODUCTS -->
+<div class="grid grid-cols-2 gap-3 px-4" id="productList"></div>
+
+<!-- CART -->
+<div class="fixed right-2 bottom-24 bg-white shadow-lg p-3 w-64 rounded">
+    <h3 class="font-bold">Cart</h3>
+    <div id="cartBox"></div>
+    <hr>
+    <p class="font-bold">Total: <span id="total">0</span> π</p>
+
+    <button onclick="payWithPi()" class="bg-green-600 text-white w-full mt-2 p-1 rounded">
+        Lipa na Pi
+    </button>
+</div>
+
+<!-- NAV -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white flex justify-around p-3 border-t">
+    <i class="fas fa-home text-indigo-700"></i>
+    <i class="fas fa-shopping-cart"></i>
+    <i class="fas fa-user"></i>
+</nav>
+
 <script>
-const products = [
-    {
-        name: "Smartphone Pro",
-        price: "1.5 π",
-        img: "https://via.placeholder.com/300"
-    },
-    {
-        name: "Headphones",
-        price: "0.8 π",
-        img: "https://via.placeholder.com/300"
-    },
-    {
-        name: "Smart Watch",
-        price: "1.2 π",
-        img: "https://via.placeholder.com/300"
-    }
+const Pi = window.Pi;
+Pi.init({ version: "2.0", sandbox: true });
+
+let user = null;
+
+let products = [
+    {name:"Phone", price:1.5},
+    {name:"Headphones", price:0.8},
+    {name:"Watch", price:1.2},
+    {name:"Laptop", price:2.5}
 ];
 
-const container = document.getElementById("products");
+let cart = [];
 
-products.forEach(p => {
-    container.innerHTML += `
-    <div class="bg-white p-3 rounded-xl shadow-sm">
-        <img src="${p.img}" class="h-32 w-full object-cover rounded-lg mb-2">
-        <h3 class="font-bold text-sm">${p.name}</h3>
-        <p class="text-purple-600 font-bold text-sm">${p.price}</p>
-        <button class="bg-purple-700 text-white w-full py-1 mt-2 rounded text-xs">
-            Nunua
-        </button>
-    </div>
-    `;
-});
+/* ---------------- LOGIN ---------------- */
+async function authPi(){
+    try {
+        const scopes = ['username','payments'];
+        const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+
+        user = auth.user;
+        document.getElementById("userBox").innerText = "Hi " + user.username;
+
+        alert("Karibu " + user.username);
+
+    } catch(err){
+        console.log(err);
+    }
+}
+
+function onIncompletePaymentFound(payment){
+    console.log("Incomplete:", payment);
+}
+
+/* ---------------- PRODUCTS ---------------- */
+function render(){
+    let box = document.getElementById("productList");
+    box.innerHTML = "";
+
+    products.forEach((p,i)=>{
+        box.innerHTML += `
+        <div class="bg-white p-3 rounded shadow">
+            <h3 class="font-bold">${p.name}</h3>
+            <p class="text-indigo-600">${p.price} π</p>
+            <button onclick="addToCart(${i})" class="bg-indigo-700 text-white w-full mt-2 p-1 rounded">
+                Add Cart
+            </button>
+        </div>`;
+    });
+}
+render();
+
+/* ---------------- CART ---------------- */
+function addToCart(i){
+    cart.push(products[i]);
+    updateCart();
+}
+
+function updateCart(){
+    let box = document.getElementById("cartBox");
+    box.innerHTML = "";
+
+    let total = 0;
+
+    cart.forEach(c=>{
+        box.innerHTML += `<p>${c.name} - ${c.price}π</p>`;
+        total += c.price;
+    });
+
+    document.getElementById("total").innerText = total;
+}
+
+/* ---------------- PI PAYMENT ---------------- */
+async function payWithPi(){
+    if(!user){
+        alert("Login kwanza");
+        return;
+    }
+
+    let total = cart.reduce((a,b)=>a+b.price,0);
+
+    const payment = await Pi.createPayment({
+        amount: total,
+        memo: "ENKRO Purchase",
+        metadata: { cart }
+    }, {
+        onReadyForServerApproval: function(paymentId){
+            console.log("Ready:", paymentId);
+        },
+        onReadyForServerCompletion: function(paymentId, txid){
+            console.log("Completed:", paymentId, txid);
+            alert("Malipo yamekamilika 🎉");
+            cart = [];
+            updateCart();
+        },
+        onCancel: function(paymentId){
+            console.log("Cancelled:", paymentId);
+        },
+        onError: function(error, payment){
+            console.log(error);
+        }
+    });
+}
 </script>
+
+</body>
+</html>
