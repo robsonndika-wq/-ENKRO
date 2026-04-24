@@ -108,26 +108,48 @@
 </body>
 </html>
 <script>
-    // LIST YAKO YA BIDHAA IPO HAPA:
+    // ORODHA YA BIDHAA
     const bidhaaZangu = [
-        { jina: "iPhone 15", bei: 2.5, picha: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" },
-        { jina: "Sony Audio", bei: 0.8, picha: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400" }
+        { 
+            jina: "iPhone 15 Pro", 
+            bei: 2.5, 
+            picha: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" 
+        },
+        { 
+            jina: "Sony Headphones", 
+            bei: 0.8, 
+            picha: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400" 
+        },
+        { 
+            jina: "Smart Watch", 
+            bei: 1.5, 
+            picha: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" 
+        },
+        { 
+            jina: "Laptop HP", 
+            bei: 4.5, 
+            picha: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" 
+        }
     ];
 
     function onyeshaBidhaa() {
         const grid = document.getElementById("productGrid");
-        if(grid) {
+        if (grid) {
             grid.innerHTML = bidhaaZangu.map(item => `
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <img src="${item.picha}" class="w-full h-32 object-cover">
                     <div class="p-2">
                         <h4 class="text-[11px] font-bold text-gray-700 truncate">${item.jina}</h4>
                         <p class="text-indigo-600 font-extrabold text-sm mt-1">${item.bei} π</p>
-                        <button class="w-full bg-indigo-700 text-white text-[10px] py-1.5 rounded-lg mt-2 font-bold">Nunua</button>
+                        <button class="w-full bg-indigo-700 text-white text-[10px] py-1.5 rounded-lg mt-2 font-bold hover:bg-indigo-800">Nunua</button>
                     </div>
                 </div>
             `).join('');
         }
     }
+
     onyeshaBidhaa();
 </script>
+
+</body>
+</html>
